@@ -156,3 +156,73 @@ function resetPositions() {
     createGhost(14, 11, 3)
   ];
 }
+function resetGame() {
+  game.score = 0;
+  game.level = 1;
+  game.lives = 3;
+  game.combo = 0;
+  game.powerTimer = 0;
+  game.paused = false;
+  game.ended = false;
+
+  cloneMap();
+  resetPositions();
+  updateInterface();
+  draw(0);
+}
+
+function startGame() {
+  initializeAudio();
+  game.running = true;
+  game.paused = false;
+  game.ended = false;
+  game.lastTime = performance.now();
+
+  startScreen.classList.remove("active");
+  pauseScreen.classList.remove("active");
+  gameOverScreen.classList.remove("active");
+
+  requestAnimationFrame(loop);
+}
+
+function restartGame() {
+  resetGame();
+  startGame();
+}
+
+function togglePause() {
+  if (!game.running || game.ended) {
+    return;
+  }
+
+  game.paused = !game.paused;
+  pauseScreen.classList.toggle("active", game.paused);
+
+  if (!game.paused) {
+    game.lastTime = performance.now();
+    requestAnimationFrame(loop);
+  }
+
+  updateInterface();
+}
+
+function loop(time) {
+  if (!game.running || game.paused || game.ended) {
+    return;
+  }
+
+  const delta = Math.min(time - game.lastTime, 100);
+  game.lastTime = time;
+  game.movementTimer += delta;
+  game.player.mouth = (Math.sin(time / 90) + 1) / 2;
+
+  const speed = Math.max(95 - game.level * 4, 55);
+
+  if (game.movementTimer >= speed) {
+    game.movementTimer = 0;
+    update();
+  }
+
+  draw(time);
+  requestAnimationFrame(loop);
+}
