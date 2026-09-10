@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Neon Maze</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="logo">
+        <span class="logo-dot"></span>
+        NEON MAZE
+      </div>
+
+      <div class="actions">
+        <button id="soundButton" class="round-button" type="button">
+          SOUND
+        </button>
+
+        <button id="pauseButton" class="round-button" type="button">
+          PAUSE
+        </button>
+      </div>
+    </header>
+
+    <section class="heading">
+      <div>
+        <p class="eyebrow">ARCADE CHASE / OFFLINE EDITION</p>
+        <h1>Eat dots.<br /><span>Beat ghosts.</span></h1>
+        <p class="intro">
+          A touch-friendly Pac-Man-inspired arcade game that works directly
+          from your phone's files.
+        </p>
+      </div>
+
+      <div class="score-board">
+        <div>
+          <small>SCORE</small>
+          <strong id="score">000000</strong>
+        </div>
+
+        <div>
+          <small>BEST</small>
+          <strong id="best">000000</strong>
+        </div>
+
+        <div>
+          <small>LEVEL</small>
+          <strong id="level">01</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="game-layout">
+      <div class="game-card">
+        <div class="game-topbar">
+          <div id="lives" class="lives"></div>
+          <div id="status" class="status">READY</div>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="gameCanvas" width="840" height="616"></canvas>
+
+          <div id="startScreen" class="screen active">
+            <div class="screen-content">
+              <div class="pacman-logo"></div>
+              <p class="eyebrow">INSERT COIN</p>
+              <h2>Ready?</h2>
+              <p>Use the buttons or swipe across the maze.</p>
+              <button id="startButton" class="primary-button" type="button">
+                Start Game
+              </button>
+            </div>
+          </div>
+
+          <div id="pauseScreen" class="screen">
+            <div class="screen-content">
+              <p class="eyebrow">PAUSED</p>
+              <h2>Take a break.</h2>
+              <button id="resumeButton" class="primary-button" type="button">
+                Resume
+              </button>
+            </div>
+          </div>
+
+          <div id="gameOverScreen" class="screen">
+            <div class="screen-content">
+              <p class="eyebrow">RUN COMPLETE</p>
+              <h2 id="gameOverTitle">Game Over</h2>
+              <p id="gameOverText">The ghosts got you.</p>
+
+              <div class="final-score">
+                <small>FINAL SCORE</small>
+                <strong id="finalScore">000000</strong>
+              </div>
+
+              <button id="restartButton" class="primary-button" type="button">
+                Play Again
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mobile-controls">
+          <button data-direction="up" type="button">▲</button>
+          <button data-direction="left" type="button">◀</button>
+          <button data-direction="down" type="button">▼</button>
+          <button data-direction="right" type="button">▶</button>
+        </div>
+      </div>
+
+      <aside class="side-panel">
+        <div class="info-card">
+          <p class="eyebrow">HOW TO PLAY</p>
+          <h3>Survive the maze.</h3>
+
+          <div class="info-row">
+            <span class="dot-preview"></span>
+            <div>
+              <strong>Collect dots</strong>
+              <p>Every dot gives you points.</p>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <span class="power-preview"></span>
+            <div>
+              <strong>Use power orbs</strong>
+              <p>Eat ghosts while they are blue.</p>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <span class="combo-preview">×</span>
+            <div>
+              <strong>Build combos</strong>
+              <p>Chain ghost captures for bigger rewards.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <p class="eyebrow">CONTROLS</p>
+
+          <div class="control-row">
+            <span>Arrow keys / WASD</span>
+            <span>Move</span>
+          </div>
+
+          <div class="control-row">
+            <span>P</span>
+            <span>Pause</span>
+          </div>
+
+          <div class="control-row">
+            <span>Touch buttons</span>
+            <span>Mobile</span>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <strong>Arcade tip</strong>
+          <p>Turn corners early. The ghosts are faster in later levels.</p>
+        </div>
+      </aside>
+    </section>
+
+    <footer>
+      <span>NEON MAZE</span>
+      <span>100% OFFLINE PLAY</span>
+    </footer>
+  </main>
+
+  <script src="js/game.js"></script>
+</body>
+</html>
