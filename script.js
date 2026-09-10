@@ -437,3 +437,131 @@ function updatePowerMode() {
     });
   }
 }
+function moveGhosts() {
+  game.ghosts.forEach((ghost, index) => {
+    const options = Object.keys(DIRECTIONS).filter((directionName) => {
+      const direction = DIRECTIONS[directionName];
+
+      return canMove(
+        wrapX(ghost.x + direction.x),
+        ghost.y + direction.y
+      );
+    });
+
+    if (options.length === 0) {
+      return;
+    }
+
+    const target = ghost.frightened
+      ? {
+          x: Math.floor(Math.random() * COLS),
+          y: Math.floor(Math.random() * ROWS)
+        }
+      : getGhostTarget(ghost, index);
+
+    options.sort((firstName, secondName) => {
+      const first = DIRECTIONS[firstName];
+      const second = DIRECTIONS[secondName];
+
+      const firstDistance =
+        Math.abs(ghost.x + first.x - target.x) +
+        Math.abs(ghost.y + first.y - target.y);
+
+      const secondDistance =
+        Math.abs(ghost.x + second.x - target.x) +
+        Math.abs(ghost.y + second.y - target.y);
+
+      return firstDistance - secondDistance;
+    });
+
+    const chosenDirection =
+      Math.random() < 0.15
+        ? options[Math.floor(Math.random() * options.length)]
+        : options[0];
+
+    ghost.direction = chosenDirection;
+
+    const direction = DIRECTIONS[chosenDirection];
+    ghost.x = wrapX(ghost.x + direction.x);
+    ghost.y += direction.y;
+  });
+}
+
+function getGhostTarget(ghost, index) {
+  if (index === 0) {
+    return game.player;
+  }
+
+  if (index === 1) {
+    const direction = DIRECTIONS[game.player.direction];
+
+    return {
+      x: game.player.x + direction.x * 4,
+      y: game.player.y + direction.y * 4
+    };
+  }
+
+  if (index === 2) {
+    return {
+      x: COLS - 1 - game.player.x,
+      y: ROWS - 1 - game.player.y
+    };
+  }
+
+  return {
+    x: game.player.x + Math.sin(Date.now() / 400) * 5,
+    y: game.player.y + Math.cos(Date.now() / 400) * 5
+  };
+}
+
+function checkCollisions() {
+  game.ghosts.forEach((ghost) => {
+    if (ghost.eaten) {
+      return;
+    }
+
+    if (ghost.x !== game.player.x || ghost.y !== game.player.y) {
+      return;
+    }
+
+    if (ghost.frightened) {
+      ghost.eaten = true;
+      ghost.frightened = false;
+      game.combo += 1;
+      game.score += 200 * Math.pow(2, game.combo - 1);
+      playTone(700, 0.1, "square");
+    } else {
+      loseLife();
+    }
+  });
+}
+
+function loseLife() {
+  game.lives -= 1;
+  playTone(160, 0.35, "sawtooth");
+
+  if (game.lives <= 0) {
+    endGame();
+    return;
+  }
+
+  resetPositions();
+  game.powerTimer = 0;
+
+  game.ghosts.forEach((ghost) => {
+    ghost.frightened = false;
+  });
+}
+
+function completeLevel() {
+  game.level += 1;
+  game.score += 500;
+  game.powerTimer = 0;
+
+  cloneMap();
+  resetPositions();
+
+  [440, 550, 660, 880].forEach((frequency, index) => {
+    setTimeout(() => playTone(frequency, 0.1), index * 90);
+  });
+}
