@@ -222,3 +222,69 @@ canvas {
   width: 100%;
   height: auto;
 }
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  padding: 25px;
+  text-align: center;
+  background: rgba(5, 7, 17, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.screen.active {
+  display: grid;
+}
+
+.screen-content {
+  max-width: 350px;
+}
+
+.screen h2 {
+  margin-bottom: 14px;
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  letter-spacing: -0.08em;
+}
+
+.screen p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.pacman-logo {
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 25px;
+  border-radius: 50%;
+  background: var(--yellow);
+  clip-path: polygon(100% 0, 46% 50%, 100% 100%, 0 100%, 0 0);
+  box-shadow: 0 0 25px rgba(255, 216, 61, 0.65);
+}
+
+.primary-button {
+  margin-top: 12px;
+  padding: 14px 22px;
+  color: #1c1705;
+  border: 0;
+  border-radius: 10px;
+  background: var(--yellow);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primary-button:active {
+  transform: scale(0.97);
+}
+
+.final-score {
+  margin: 25px 0 8px;
+}
+
+.final-score strong {
+  color: var(--yellow);
+  font-family: monospace;
+  font-size: 2rem;
+  font-weight: normal;
+}
