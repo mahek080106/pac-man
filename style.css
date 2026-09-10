@@ -1,0 +1,142 @@
+:root {
+  --background: #080b18;
+  --panel: #11172d;
+  --panel-light: #17203e;
+  --border: rgba(180, 195, 255, 0.15);
+  --text: #f4f6ff;
+  --muted: #929abd;
+  --yellow: #ffd83d;
+  --cyan: #58e8ff;
+  --pink: #ff4e91;
+  --blue: #6077ff;
+  --green: #8cffbd;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(
+      circle at 10% 8%,
+      rgba(96, 119, 255, 0.18),
+      transparent 28rem
+    ),
+    radial-gradient(
+      circle at 95% 30%,
+      rgba(255, 78, 145, 0.12),
+      transparent 25rem
+    ),
+    var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button {
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  width: min(1400px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 26px 0 24px;
+}
+
+.topbar,
+.heading,
+.game-topbar,
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar {
+  margin-bottom: 70px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.logo-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 0 18px var(--yellow);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.round-button {
+  padding: 9px 12px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.65rem;
+  cursor: pointer;
+}
+
+.round-button:hover,
+.round-button:active {
+  color: var(--text);
+  border-color: var(--cyan);
+}
+
+.heading {
+  align-items: end;
+  gap: 30px;
+  margin-bottom: 45px;
+}
+
+.eyebrow {
+  margin: 0 0 11px;
+  color: var(--cyan);
+  font-size: 0.65rem;
+  font-weight: bold;
+  letter-spacing: 0.16em;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 20px;
+  font-size: clamp(3.6rem, 9vw, 8rem);
+  line-height: 0.84;
+  letter-spacing: -0.09em;
+}
+
+h1 span {
+  color: var(--yellow);
+}
+
+.intro {
+  max-width: 520px;
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
