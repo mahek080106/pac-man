@@ -565,3 +565,111 @@ function completeLevel() {
     setTimeout(() => playTone(frequency, 0.1), index * 90);
   });
 }
+let audioContext = null;
+
+function initializeAudio() {
+  if (!game.sound) {
+    return;
+  }
+
+  if (!audioContext) {
+    audioContext = new (
+      window.AudioContext || window.webkitAudioContext
+    )();
+  }
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+}
+
+function playTone(frequency, duration, type = "square") {
+  if (!game.sound || !audioContext) {
+    return;
+  }
+
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+
+  oscillator.type = type;
+  oscillator.frequency.value = frequency;
+
+  gain.gain.setValueAtTime(0.035, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(
+    0.001,
+    audioContext.currentTime + duration
+  );
+
+  oscillator.connect(gain);
+  gain.connect(audioContext.destination);
+
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + duration);
+}
+
+document.addEventListener("keydown", (event) => {
+  const direction = KEY_DIRECTIONS[event.key];
+
+  if (direction) {
+    event.preventDefault();
+    setDirection(direction);
+  }
+
+  if (event.key.toLowerCase() === "p") {
+    togglePause();
+  }
+});
+
+document.querySelectorAll("[data-direction]").forEach((button) => {
+  button.addEventListener("click", () => {
+    setDirection(button.dataset.direction);
+  });
+});
+
+canvas.addEventListener(
+  "touchstart",
+  (event) => {
+    const touch = event.changedTouches[0];
+
+    game.touchStartX = touch.clientX;
+    game.touchStartY = touch.clientY;
+  },
+  { passive: true }
+);
+
+canvas.addEventListener(
+  "touchend",
+  (event) => {
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - game.touchStartX;
+    const deltaY = touch.clientY - game.touchStartY;
+
+    if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < 20) {
+      return;
+    }
+
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      setDirection(deltaX > 0 ? "right" : "left");
+    } else {
+      setDirection(deltaY > 0 ? "down" : "up");
+    }
+  },
+  { passive: true }
+);
+
+startButton.addEventListener("click", startGame);
+restartButton.addEventListener("click", restartGame);
+resumeButton.addEventListener("click", togglePause);
+pauseButton.addEventListener("click", togglePause);
+
+soundButton.addEventListener("click", () => {
+  game.sound = !game.sound;
+  soundButton.textContent = game.sound ? "SOUND" : "MUTED";
+
+  if (game.sound) {
+    initializeAudio();
+    playTone(600, 0.08);
+  }
+});
+
+resetGame();
