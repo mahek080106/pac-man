@@ -565,111 +565,208 @@ function completeLevel() {
     setTimeout(() => playTone(frequency, 0.1), index * 90);
   });
 }
-let audioContext = null;
+function endGame() {
+  game.running = false;
+  game.ended = true;
 
-function initializeAudio() {
-  if (!game.sound) {
-    return;
-  }
-
-  if (!audioContext) {
-    audioContext = new (
-      window.AudioContext || window.webkitAudioContext
-    )();
-  }
-
-  if (audioContext.state === "suspended") {
-    audioContext.resume();
-  }
-}
-
-function playTone(frequency, duration, type = "square") {
-  if (!game.sound || !audioContext) {
-    return;
-  }
-
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-
-  oscillator.type = type;
-  oscillator.frequency.value = frequency;
-
-  gain.gain.setValueAtTime(0.035, audioContext.currentTime);
-  gain.gain.exponentialRampToValueAtTime(
-    0.001,
-    audioContext.currentTime + duration
+  const previousBest = Number(
+    localStorage.getItem("neonMazeBest") || "0"
   );
 
-  oscillator.connect(gain);
-  gain.connect(audioContext.destination);
+  const isNewBest = game.score > previousBest;
 
-  oscillator.start();
-  oscillator.stop(audioContext.currentTime + duration);
+  if (isNewBest) {
+    localStorage.setItem("neonMazeBest", String(game.score));
+  }
+
+  gameOverTitle.textContent = isNewBest ? "New high score" : "Game over";
+  gameOverText.textContent = isNewBest
+    ? "You own the maze."
+    : "The ghosts got you.";
+  finalScoreElement.textContent = formatNumber(game.score);
+  gameOverScreen.classList.add("active");
+
+  updateInterface();
 }
 
-document.addEventListener("keydown", (event) => {
-  const direction = KEY_DIRECTIONS[event.key];
+function draw(time) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (direction) {
-    event.preventDefault();
-    setDirection(direction);
+  ctx.fillStyle = "#050711";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  drawMaze();
+  drawPellets(time);
+  drawGhosts(time);
+  drawPlayer();
+
+  if (game.powerTimer > 0) {
+    ctx.fillStyle = `rgba(88, 232, 255, ${
+      0.015 + Math.sin(time / 130) * 0.01
+    })`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
+}
 
-  if (event.key.toLowerCase() === "p") {
-    togglePause();
+function drawMaze() {
+  for (let y = 0; y < ROWS; y += 1) {
+    for (let x = 0; x < COLS; x += 1) {
+      if (game.map[y][x] !== "#") {
+        continue;
+      }
+
+      const px = x * TILE;
+      const py = y * TILE;
+
+      ctx.fillStyle = "#151c46";
+      ctx.fillRect(px, py, TILE, TILE);
+
+      ctx.strokeStyle = "#546cff";
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(px + 4, py + 4, TILE - 8, TILE - 8);
+    }
   }
-});
+}
 
-document.querySelectorAll("[data-direction]").forEach((button) => {
-  button.addEventListener("click", () => {
-    setDirection(button.dataset.direction);
+function drawPellets(time) {
+  game.pellets.forEach((key) => {
+    const [x, y] = key.split(",").map(Number);
+    const isPowerPellet = BASE_MAP[y][x] === "o";
+
+    const radius = isPowerPellet
+      ? 5 + Math.sin(time / 130) * 1.5
+      : 2.3;
+
+    ctx.fillStyle = isPowerPellet ? "#58e8ff" : "#f0f3ff";
+    ctx.shadowColor = isPowerPellet ? "#58e8ff" : "transparent";
+    ctx.shadowBlur = isPowerPellet ? 14 : 0;
+
+    ctx.beginPath();
+    ctx.arc(
+      x * TILE + TILE / 2,
+      y * TILE + TILE / 2,
+      radius,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
   });
-});
+}
 
-canvas.addEventListener(
-  "touchstart",
-  (event) => {
-    const touch = event.changedTouches[0];
+function drawPlayer() {
+  const player = game.player;
+  const direction = DIRECTIONS[player.direction];
 
-    game.touchStartX = touch.clientX;
-    game.touchStartY = touch.clientY;
-  },
-  { passive: true }
-);
+  const px = player.x * TILE + TILE / 2;
+  const py = player.y * TILE + TILE / 2;
+  const mouth = 0.18 + player.mouth * 0.3;
 
-canvas.addEventListener(
-  "touchend",
-  (event) => {
-    const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - game.touchStartX;
-    const deltaY = touch.clientY - game.touchStartY;
+  ctx.save();
+  ctx.translate(px, py);
+  ctx.rotate(direction.angle);
 
-    if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < 20) {
+  ctx.fillStyle = "#ffd83d";
+  ctx.shadowColor = "#ffd83d";
+  ctx.shadowBlur = 14;
+
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.arc(0, 0, TILE * 0.4, mouth, Math.PI * 2 - mouth);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawGhosts(time) {
+  game.ghosts.forEach((ghost) => {
+    const px = ghost.x * TILE + TILE / 2;
+    const py = ghost.y * TILE + TILE / 2;
+    const radius = TILE * 0.36;
+
+    ctx.save();
+    ctx.translate(px, py);
+
+    if (ghost.eaten) {
+      ctx.fillStyle = "#e7ecff";
+
+      ctx.beginPath();
+      ctx.arc(-6, -2, 4, 0, Math.PI * 2);
+      ctx.arc(6, -2, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
       return;
     }
 
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      setDirection(deltaX > 0 ? "right" : "left");
-    } else {
-      setDirection(deltaY > 0 ? "down" : "up");
-    }
-  },
-  { passive: true }
-);
+    const frightenedColor =
+      Math.floor(time / 180) % 2 === 0 ? "#4e78ff" : "#f5f7ff";
 
-startButton.addEventListener("click", startGame);
-restartButton.addEventListener("click", restartGame);
-resumeButton.addEventListener("click", togglePause);
-pauseButton.addEventListener("click", togglePause);
+    const color = ghost.frightened ? frightenedColor : ghost.color;
 
-soundButton.addEventListener("click", () => {
-  game.sound = !game.sound;
-  soundButton.textContent = game.sound ? "SOUND" : "MUTED";
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 12;
 
-  if (game.sound) {
-    initializeAudio();
-    playTone(600, 0.08);
+    ctx.beginPath();
+    ctx.arc(0, -2, radius, Math.PI, 0);
+    ctx.lineTo(radius, radius);
+    ctx.lineTo(radius * 0.5, radius * 0.7);
+    ctx.lineTo(0, radius);
+    ctx.lineTo(-radius * 0.5, radius * 0.7);
+    ctx.lineTo(-radius, radius);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#ffffff";
+
+    ctx.beginPath();
+    ctx.arc(-6, -5, 4, 0, Math.PI * 2);
+    ctx.arc(6, -5, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#11152c";
+
+    ctx.beginPath();
+    ctx.arc(-6, -5, 2, 0, Math.PI * 2);
+    ctx.arc(6, -5, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  });
+}
+
+function updateInterface() {
+  scoreElement.textContent = formatNumber(game.score);
+
+  bestElement.textContent = formatNumber(
+    Number(localStorage.getItem("neonMazeBest") || "0")
+  );
+
+  levelElement.textContent = String(game.level).padStart(2, "0");
+
+  livesElement.innerHTML = "";
+
+  for (let index = 0; index < game.lives; index += 1) {
+    const life = document.createElement("span");
+    life.className = "life";
+    livesElement.appendChild(life);
   }
-});
 
-resetGame();
+  if (game.paused) {
+    statusElement.textContent = "PAUSED";
+  } else if (game.powerTimer > 0) {
+    statusElement.textContent = "POWER MODE";
+  } else if (game.running) {
+    statusElement.textContent = "HUNTING";
+  } else {
+    statusElement.textContent = "READY";
+  }
+}
+
+function formatNumber(value) {
+  return String(value).padStart(6, "0");
+}
